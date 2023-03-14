@@ -1,5 +1,5 @@
 import numpy as np
-np.random.seed(0)
+# np.random.seed(0)
 import torch
 import torch.nn as nn
 from models import LogisticRegression
@@ -7,12 +7,12 @@ from utils import printConfig
 from torch_geometric.nn import GCNConv
 import torch.nn.functional as F
 # To fix the random seed
-torch.manual_seed(0)
-torch.cuda.manual_seed_all(0)
+# torch.manual_seed(0)
+# torch.cuda.manual_seed_all(0)
 # torch.backends.cudnn.deterministic = True
 # torch.backends.cudnn.benchmark = False
 import random
-random.seed(0)
+# random.seed(0)
 
 import os
 
@@ -22,7 +22,7 @@ from sklearn.metrics import normalized_mutual_info_score, pairwise
 class embedder:
     def __init__(self, args):
         self.args = args
-        self.hidden_layers = eval(args.layers)
+        self.hidden_layers = eval(args.layers) # Simply turns the string representation of the layers list into an actual list
         printConfig(args)
 
     def infer_embeddings(self, epoch):
@@ -52,6 +52,7 @@ class embedder:
         
 
     def evaluate_node(self, epoch):
+        # This function is evaluated every 5 epochs. The evaluation.py file is for afterwards.
 
         # print()
         # print("Evaluating ...")
@@ -98,6 +99,11 @@ class embedder:
         test_acc, test_std = test_accs.mean(), test_accs.std()
 
         print('** [{}] [Epoch: {}] Val: {:.4f} ({:.4f}) | Test: {:.4f} ({:.4f}) **'.format(self.args.embedder, epoch, dev_acc, dev_std, test_acc, test_std))
+
+        self.writer.add_scalar('accuracies/validation', dev_acc, epoch)
+        self.writer.add_scalar('accuracies/test', test_acc, epoch)
+        self.writer.add_scalar('accuracies/validation_err', dev_std, epoch)
+        self.writer.add_scalar('accuracies/test_err', test_std, epoch)
 
         if dev_acc > self.best_dev_acc:
             self.best_dev_acc = dev_acc

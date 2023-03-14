@@ -2,10 +2,10 @@ from torch_geometric.data import Data, InMemoryDataset
 import torch_geometric.transforms as T
 
 import numpy as np
-np.random.seed(0)
+# np.random.seed(0)
 import torch
-torch.manual_seed(0)
-torch.cuda.manual_seed_all(0)
+# torch.manual_seed(0)
+# torch.cuda.manual_seed_all(0)
 # torch.backends.cudnn.deterministic = True
 # torch.backends.cudnn.benchmark = False
 import os.path as osp
@@ -25,6 +25,9 @@ def download_pyg_data(config):
     leaf_dir = config["kwargs"]["root"].split("/")[-1].strip()
     data_dir = osp.join(config["kwargs"]["root"], "" if config["name"] == leaf_dir else config["name"])
     dst_path = osp.join(data_dir, "raw", "data.pt")
+    if config["name"] == "chameleon":
+        data_dir = osp.join(data_dir, "geom_gcn")
+        dst_path = osp.join(data_dir, "raw", "out1_graph_edges.txt") # ALEX: hacky
     if not osp.exists(dst_path):
         DatasetClass = config["class"]
         if config["name"] == "WikiCS":
@@ -49,7 +52,7 @@ def download_data(root, dataset):
         return download_pyg_data(config)
 
 
-class Dataset(InMemoryDataset):
+class AFGRLDataset(InMemoryDataset):
 
     """
     A PyTorch InMemoryDataset to build multi-view dataset through graph data augmentation
@@ -101,7 +104,8 @@ class Dataset(InMemoryDataset):
 
     @property
     def processed_file_names(self):
-        return [f'byg.data.pt']
+        # return [f'byg.data.pt']
+        return ["mydata.pt"]
 
     @property
     def raw_dir(self):

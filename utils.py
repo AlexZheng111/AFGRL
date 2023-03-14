@@ -1,4 +1,5 @@
 from torch_geometric.datasets import Planetoid, Coauthor, Amazon, WikiCS
+from torch_geometric.datasets import WikipediaNetwork # ALEX
 import torch.nn.functional as F
 
 import os.path as osp
@@ -12,8 +13,8 @@ import numpy as np
 
 import torch
 import torch.nn as nn
-torch.manual_seed(0)
-torch.cuda.manual_seed_all(0)
+# torch.manual_seed(0)
+# torch.cuda.manual_seed_all(0)
 # torch.backends.cudnn.deterministic = True
 # torch.backends.cudnn.benchmark = False
 from datetime import datetime
@@ -100,6 +101,11 @@ def decide_config(root, dataset):
         root = osp.join(root, "pyg")
         params = {"kwargs": {"root": root},
                   "name": dataset, "class": WikiCS, "src": "pyg"}
+    elif dataset == "chameleon":
+        dataset = "chameleon"
+        root = osp.join(root, "pyg")
+        params = {"kwargs": {"root": root, "name": dataset, "geom_gcn_preprocess": True},
+                  "name": dataset, "class": WikipediaNetwork, "src": "pyg"}
     else:
         raise Exception(
             f"Unknown dataset name {dataset}, name has to be one of the following 'cora', 'citeseer', 'pubmed', 'photo', 'computers', 'cs', 'physics'")
@@ -124,8 +130,10 @@ def create_masks(data):
     :return: The modified data
     """
     if not hasattr(data, "val_mask"):
-
-        data.train_mask = data.dev_mask = data.test_mask = None
+        data.train_mask = None
+        data.dev_mask = None
+        data.test_mask = None
+        # data.train_mask = data.dev_mask = data.test_mask = None
 
         for i in range(20):
             labels = data.y.numpy()
@@ -144,7 +152,8 @@ def create_masks(data):
             dev_mask = dev_mask.reshape(1, -1)
             train_mask = train_mask.reshape(1, -1)
 
-            if data.train_mask is None:
+            # if data.train_mask is None:
+            if not hasattr(data, "train_mask"):
                 data.train_mask = train_mask
                 data.val_mask = dev_mask
                 data.test_mask = test_mask
@@ -172,6 +181,7 @@ class EMA:
             return new
 
         beta = 1 - (1 - self.beta) * (np.cos(np.pi * self.step / self.total_steps) + 1) / 2.0
+        # print(f'Momentum at epoch {self.step}: {beta}')
         self.step += 1
         return old * beta + (1 - beta) * new
 
@@ -186,7 +196,7 @@ def loss_fn(x, y):
     x = F.normalize(x, dim=-1, p=2)
     y = F.normalize(y, dim=-1, p=2)
 
-    return 2 - 2 * (x * y).sum(dim=-1)
+    return 2 - 2 * (x * y).sum(dim=-1) # Elementwise multiply the representations?
 
 
 def l2_normalize(x):

@@ -1,0 +1,36 @@
+embedder_AFGRL_dataset_photo_checkpoint_dir_./model_checkpoints_task_node_layers_[512]_pred_hid_1024_topk_4_num_centroids_100_num_kmeans_5_eval_freq_5_mad_0.9_lr_0.001_es_3000 -> ** [Best epoch: 1985] Best val | Best test: 92.9869 (0.8403) / 92.8423 (0.2651)**
+
+embedder_AFGRL_dataset_photo_checkpoint_dir__task_node_layers_[512]_pred_hid_1024_topk_4_num_centroids_100_num_kmeans_5_eval_freq_5_mad_0.9_lr_0.001_es_3000 -> ** [Best epoch: 0] Best val | Best test: 92.2680 (1.0361) / 92.2386 (0.2378)**
+
+embedder_AFGRL_dataset_photo_checkpoint_dir__task_node_layers_[512]_pred_hid_1024_topk_4_num_centroids_100_num_kmeans_5_eval_freq_5_mad_0.9_lr_0.001_es_3000 -> ** [Best epoch: 0] Best val | Best test: 92.2680 (1.0361) / 92.2386 (0.2378)**
+
+embedder_AFGRL_dataset_photo_checkpoint_dir__task_node_layers_[512]_pred_hid_1024_topk_4_num_centroids_100_num_kmeans_5_eval_freq_5_mad_0.9_lr_0.001_es_3000 -> ** [Best epoch: 0] Best val | Best test: 92.2680 (1.0361) / 92.2386 (0.2378)**
+
+embedder_AFGRL_dataset_photo_checkpoint_dir__task_node_layers_[512]_pred_hid_1024_topk_4_num_centroids_100_num_kmeans_5_eval_freq_5_mad_0.9_lr_0.001_es_3000 -> ** [Best epoch: 0] Best val | Best test: 92.2680 (1.0361) / 92.2386 (0.2378)**
+
+embedder_AFGRL_dataset_photo_checkpoint_dir__task_node_layers_[512]_pred_hid_1024_topk_4_num_centroids_100_num_kmeans_5_eval_freq_5_mad_0.9_lr_0.001_es_1000 -> ** [Best epoch: 0] Best val | Best test: 92.2680 (1.0361) / 92.2386 (0.2378)**
+
+embedder_AFGRL_dataset_photo_checkpoint_dir__task_node_layers_[512]_pred_hid_1024_topk_4_num_centroids_100_num_kmeans_5_eval_freq_5_mad_0.9_lr_0.001_es_3000 -> ** [Best epoch: 0] Best val | Best test: 92.2680 (1.0361) / 92.2386 (0.2378)**
+
+embedder_AFGRL_dataset_photo_checkpoint_dir__task_node_layers_[512]_pred_hid_1024_topk_4_num_centroids_100_num_kmeans_5_eval_freq_5_mad_0.9_lr_0.001_es_3000 -> ** [Best epoch: 0] Best val | Best test: 92.2680 (1.0361) / 92.2386 (0.2378)**
+
+embedder_AFGRL_dataset_photo_checkpoint_dir__task_node_layers_[512]_pred_hid_1024_topk_4_num_centroids_100_num_kmeans_5_eval_freq_5_mad_0.9_lr_0.001_es_3000 -> ** [Best epoch: 0] Best val | Best test: 92.2680 (1.0361) / 92.2386 (0.2378)**
+
+embedder_AFGRL_dataset_photo_checkpoint_dir__task_node_layers_[512]_pred_hid_1024_topk_4_num_centroids_100_num_kmeans_5_eval_freq_5_mad_0.9_lr_0.001_es_3000 -> ** [Best epoch: 0] Best val | Best test: 91.8235 (0.9412) / 91.8194 (0.2617)**
+
+embedder_AFGRL_dataset_photo_checkpoint_dir__task_node_layers_[512]_pred_hid_1024_topk_4_num_centroids_100_num_kmeans_5_eval_freq_5_mad_0.9_lr_0.001_es_3000 -> ** [Best epoch: 965] Best val | Best test: 92.9608 (0.9732) / 93.0000 (0.2592)**
+
+embedder_AFGRL_dataset_photo_checkpoint_dir__task_node_layers_[512]_pred_hid_1024_topk_4_num_centroids_100_num_kmeans_5_eval_freq_5_mad_0.9_lr_0.001_es_3000 -> ** [Best epoch: 0] Best val | Best test: 92.1503 (0.9856) / 92.1266 (0.2641)**
+
+embedder_AFGRL_dataset_photo_checkpoint_dir__task_node_layers_[512]_pred_hid_1024_topk_4_num_centroids_100_num_kmeans_5_eval_freq_5_mad_0.9_lr_0.001_es_3000 -> ** [Best epoch: 0] Best val | Best test: 91.9216 (0.9978) / 91.9093 (0.2275)**
+
+embedder_AFGRL_dataset_photo_checkpoint_dir__task_node_layers_[512]_pred_hid_1024_topk_4_num_centroids_100_num_kmeans_5_eval_freq_5_mad_0.9_lr_0.001_es_3000 -> ** [Best epoch: 0] Best val | Best test: 91.8301 (1.0972) / 91.8276 (0.2295)**
+
+embedder_AFGRL_dataset_photo_checkpoint_dir__task_node_layers_[512]_pred_hid_1024_topk_4_num_centroids_100_num_kmeans_5_eval_freq_5_mad_0.9_lr_0.001_es_3000 -> ** [Best epoch: 985] Best val | Best test: 92.9346 (0.9014) / 92.8856 (0.2742)**
+
+embedder_AFGRL_dataset_photo_checkpoint_dir__task_node_layers_[512]_pred_hid_1024_topk_4_num_centroids_100_num_kmeans_5_eval_freq_5_mad_0.9_lr_0.001_es_3000 -> ** [Best epoch: 0] Best val | Best test: 91.9673 (0.9908) / 92.0025 (0.3496)**
+
+embedder_AFGRL_dataset_photo_checkpoint_dir__task_node_layers_[512]_pred_hid_1024_topk_4_num_centroids_100_num_kmeans_5_eval_freq_5_mad_0.9_lr_0.001_es_3000 -> ** [Best epoch: 0] Best val | Best test: 92.0261 (0.7788) / 91.9926 (0.2894)**
+
+embedder_AFGRL_dataset_photo_checkpoint_dir__task_node_layers_[512]_pred_hid_1024_topk_4_num_centroids_100_num_kmeans_5_eval_freq_5_mad_0.9_lr_0.001_es_3000 -> ** [Best epoch: 915] Best val | Best test: 92.7516 (1.0297) / 92.7614 (0.2785)**
+

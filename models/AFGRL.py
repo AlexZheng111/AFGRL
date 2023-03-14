@@ -3,14 +3,15 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
-np.random.seed(0)
+# np.random.seed(0)
 import sys
 from torch import optim
-from tensorboardX import SummaryWriter
+# from tensorboardX import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 
 # To fix the random seed
-torch.manual_seed(0)
-torch.cuda.manual_seed_all(0)
+# torch.manual_seed(0)
+# torch.cuda.manual_seed_all(0)
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
@@ -18,11 +19,14 @@ import os
 from utils import EMA, set_requires_grad, init_weights, update_moving_average, loss_fn, repeat_1d_tensor, currentTime
 import copy
 
-from data import Dataset
+from data import AFGRLDataset
 from embedder import embedder
 from utils import config2string
 from embedder import Encoder
-import faiss
+# import faiss
+
+# Kmeans clustering from scipy
+from scipy.cluster.vq import vq, kmeans, whiten
 
 
 class AFGRL_ModelTrainer(embedder):
@@ -32,8 +36,16 @@ class AFGRL_ModelTrainer(embedder):
         self._args = args
         self._init()
         self.config_str = config2string(args)
+        log_dir = os.path.join('runs', self.config_str)
         print("\n[Config] {}\n".format(self.config_str))
-        self.writer = SummaryWriter(log_dir="runs/{}".format(self.config_str))
+        # self.writer = SummaryWriter(log_dir="runs/{}".format(self.config_str))
+        self.writer = SummaryWriter(log_dir=log_dir)
+
+        layout = {'AFGRL': {
+            "loss": ["Multiline", ["loss/train"]],
+            "accuracies": ["Multiline", ["accuracies/validation", "accuracies/test", "accuracies/validation_err", "accuracies/test_err"]]
+        }}
+        self.writer.add_custom_scalars(layout)
 
     def _init(self):
         args = self._args
@@ -41,8 +53,10 @@ class AFGRL_ModelTrainer(embedder):
         print("Downstream Task : {}".format(self._task))
         os.environ["CUDA_VISIBLE_DEVICES"] = str(args.device)
         self._device = f'cuda:{args.device}' if torch.cuda.is_available() else "cpu"
-        torch.cuda.set_device(self._device)
-        self._dataset = Dataset(root=args.root, dataset=args.dataset)
+        # torch.cuda.set_device(self._device)
+        torch.cuda.device(self._device)
+        # torch.device = self._device
+        self._dataset = AFGRLDataset(root=args.root, dataset=args.dataset)
         self._loader = DataLoader(dataset=self._dataset)
         layers = [self._dataset.data.x.shape[1]] + self.hidden_layers
         self._model = AFGRL(layers, args).to(self._device)
@@ -69,6 +83,8 @@ class AFGRL_ModelTrainer(embedder):
                 _, loss, ind, k = self._model(x=batch_data.x, y=batch_data.y, edge_index=batch_data.edge_index,
                                            neighbor=[batch_data.neighbor_index, batch_data.neighbor_attr],
                                            edge_weight=batch_data.edge_attr, epoch=epoch)
+
+                self.writer.add_scalar("Loss/train", loss, epoch)
 
                 self._optimizer.zero_grad()
                 loss.backward()
@@ -142,7 +158,7 @@ class Neighbor(nn.Module):
         self.clus_num_iters = args.clus_num_iters
 
     def __get_close_nei_in_back(self, indices, each_k_idx, cluster_labels, back_nei_idxs, k):
-        # get which neighbors are close in the background set
+        # get which neighbors are close in the background set (only consider the nodes which land in the same cluster assignment(s) as the target node)
         batch_labels = cluster_labels[each_k_idx][indices]
         top_cluster_labels = cluster_labels[each_k_idx][back_nei_idxs]
         batch_labels = repeat_1d_tensor(batch_labels, k)
@@ -152,8 +168,9 @@ class Neighbor(nn.Module):
 
     def forward(self, adj, student, teacher, top_k, epoch):
         n_data, d = student.shape
+        # similarity provides the similarity between each node from the online embedding to each node from the target embedding
         similarity = torch.matmul(student, torch.transpose(teacher, 1, 0).detach())
-        similarity += torch.eye(n_data, device=self.device) * 10
+        similarity += torch.eye(n_data, device=self.device) * 10 # What's the point of this?? Oh, to include the node itself as a nearest neighbor
 
         _, I_knn = similarity.topk(k=top_k, dim=1, largest=True, sorted=True)
         tmp = torch.LongTensor(np.arange(n_data)).unsqueeze(-1).to(self.device)
@@ -166,35 +183,53 @@ class Neighbor(nn.Module):
 
         pred_labels = []
 
-        for seed in range(self.num_kmeans):
-            kmeans = faiss.Kmeans(d, ncentroids, niter=niter, gpu=False, seed=seed + 1234)
-            kmeans.train(teacher.cpu().numpy())
-            _, I_kmeans = kmeans.index.search(teacher.cpu().numpy(), 1)
-        
-            clust_labels = I_kmeans[:,0]
+        # Run k-means num_keans times
+        # for seed in range(self.num_kmeans):
+            # # kmeans = faiss.Kmeans(d, ncentroids, niter=niter, gpu=False, seed=seed + 1234)
+            # # d = vector dimension (num features), |clustering object parameters->| niter=clustering iterations, seed=seed
+            # # notice the faiss kmeans object has nothing to do with the features yet. It is simply a tool right now.
+            # kmeans = None
+            # kmeans.train(teacher.cpu().numpy())
+            # # If using faiss, this would return (squard L2 distances, nearest centroid to each sample)
+            # # I_Kmeans contains the cluster assignments i.e. [0, num_clusters] in a (n,1) array
+            # _, I_kmeans = kmeans.index.search(teacher.cpu().numpy(), 1)
 
-            pred_labels.append(clust_labels)
+            # # Just need to perform kmeans in such a way that we get the cluster labels
+            # clust_labels = I_kmeans[:,0]
 
-        pred_labels = np.stack(pred_labels, axis=0)
-        cluster_labels = torch.from_numpy(pred_labels).long()
 
-        all_close_nei_in_back = None
-        with torch.no_grad():
-            for each_k_idx in range(self.num_kmeans):
-                curr_close_nei = self.__get_close_nei_in_back(tmp.squeeze(-1), each_k_idx, cluster_labels, I_knn, I_knn.shape[1])
+            # -----------------
+            # MY KMEANS
+            # -----------------
+        #     teacher_cpu = whiten(teacher.cpu().numpy())
+        #     centroids, mean_dist = kmeans(teacher_cpu, ncentroids, seed=seed+1234)
+        #     I_kmeans, dist = vq(teacher_cpu, centroids)
+        #     clust_labels = I_kmeans
 
-                if all_close_nei_in_back is None:
-                    all_close_nei_in_back = curr_close_nei
-                else:
-                    all_close_nei_in_back = all_close_nei_in_back | curr_close_nei
+        #     pred_labels.append(clust_labels)
 
-        all_close_nei_in_back = all_close_nei_in_back.to(self.device)
+        # pred_labels = np.stack(pred_labels, axis=0)
+        # cluster_labels = torch.from_numpy(pred_labels).long()
 
-        globality = self.create_sparse_revised(I_knn, all_close_nei_in_back)
+        # all_close_nei_in_back = None
+        # with torch.no_grad():
+        #     for each_k_idx in range(self.num_kmeans):
+        #         curr_close_nei = self.__get_close_nei_in_back(tmp.squeeze(-1), each_k_idx, cluster_labels, I_knn, I_knn.shape[1])
 
-        pos_ = locality + globality
+        #         if all_close_nei_in_back is None:
+        #             all_close_nei_in_back = curr_close_nei
+        #         else:
+        #             all_close_nei_in_back = all_close_nei_in_back | curr_close_nei
+
+        # all_close_nei_in_back = all_close_nei_in_back.to(self.device)
+
+        # globality = self.create_sparse_revised(I_knn, all_close_nei_in_back)
+
+        # pos_ = locality + globality 
+        pos_ = locality
 
         return pos_.coalesce()._indices(), I_knn.shape[1]
+    # https://pytorch.org/docs/stable/sparse.html#sparse-uncoalesced-coo-docs
 
     def create_sparse(self, I):
         
